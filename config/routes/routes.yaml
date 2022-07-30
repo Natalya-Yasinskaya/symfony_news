@@ -1,0 +1,15 @@
+# config/routes.yaml
+
+abc_news:
+    path: /abc
+    controller: App\Controller\NewsController::get_abc_news
+
+rbk_news:
+    path: /rbk
+    controller: App\Controller\NewsController::get_rbk_news
+
+index:
+    path: /db
+    controller: App\Controller\DbController::createDb
+   
+      
