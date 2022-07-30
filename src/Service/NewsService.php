@@ -6,23 +6,57 @@ use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
+use Doctrine\Persistence\ManagerRegistry;
+
+use App\Entity\News;
+use Symfony\Component\HttpFoundation\Response;
+use App\Repository\NewsRepository;
+
 class NewsService{
     private HttpClientInterface $client;
 
-    public function __construct() {
-        $this->news = null;
+    public function __construct(ManagerRegistry $doctrine, NewsRepository $repository) {
         $this->client = HttpClient::create();
+        $this->entityManager = $doctrine->getManager();
+        $this->repository = $repository;
+    }
+
+    public function save_news($news)
+    {
+        foreach ($news as $news_item) {
+            // $is_news_exists = $this->repository->findBy(['title', $news_item['title']]);
+            // if ($is_news_exists) {
+            //     continue;
+            // }
+            $newsEntity = new News();
+            $newsEntity->save($news_item);
+            $this->entityManager->persist($newsEntity);
+        }
+        $this->entityManager->flush();
     }
     
     public function get_news($provider)
     {
-        // $news_exists_in_db = this.database.getnews($provider);
+        // здесь подумать
+        // нам нужно получить новости, они могут быть или не быть в базе данных
+        // в базе данных есть entity news, в котором есть колонка news_provider
+        // в зависимости от того, с какого сайта мы спрасили новости, мы заполняем эту колонку
+        // соответсвующим провайдером
 
-        // if ($news_exists_in_db) {
-            // return $news_exists_in_db;
-        // } else {
-            // return $this->parse_news($provider);
-        // }
+        // в чем нужно разобраться:
+        // как получить данные из таблицы news по колонке  news_provider === $provider
+        // (в нашем случае news_provider === 'abc')
+        // найти как пищется findBy
+
+        $news_exists_in_db = $this->repository.findBy(['news_provider' => 'abc']);
+
+        if ($news_exists_in_db) {
+            return $news_exists_in_db;
+        } else {
+            $news = $this->parse_news($provider);
+            $this->save_news($news);
+            return $news;
+        }
     }
 
     // TODO: get news_provider and invoke corresponing method
@@ -55,9 +89,10 @@ class NewsService{
             return [
                 'title' => $news_item['title'],
                 'href' => $news_item['href'],
-                // 'photo' => $photos->first()->image(),
+                // 'img_href' => $photos->first()->image(), // $node->attr('href')
                 'full_text' => implode(' ', $arr),
                 'rating' => rand(1, 10),
+                'news_provider' => 'abc',
             ];
         }, $sliced_news);
 

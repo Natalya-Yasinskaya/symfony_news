@@ -10,8 +10,8 @@ class NewsController extends AbstractController
 {
     private NewsService $newsService;
 
-    public function __construct() {
-        $this->newsService = new NewsService();
+    public function __construct(NewsService $newsService) {
+        $this->newsService = $newsService;
     }
 
     public function get_abc_news(): Response {
