@@ -24,10 +24,6 @@ class NewsService{
     public function save_news($news)
     {
         foreach ($news as $news_item) {
-            // $is_news_exists = $this->repository->findBy(['title', $news_item['title']]);
-            // if ($is_news_exists) {
-            //     continue;
-            // }
             $newsEntity = new News();
             $newsEntity->save($news_item);
             $this->entityManager->persist($newsEntity);
@@ -37,18 +33,7 @@ class NewsService{
     
     public function get_news($provider)
     {
-        // здесь подумать
-        // нам нужно получить новости, они могут быть или не быть в базе данных
-        // в базе данных есть entity news, в котором есть колонка news_provider
-        // в зависимости от того, с какого сайта мы спрасили новости, мы заполняем эту колонку
-        // соответсвующим провайдером
-
-        // в чем нужно разобраться:
-        // как получить данные из таблицы news по колонке  news_provider === $provider
-        // (в нашем случае news_provider === 'abc')
-        // найти как пищется findBy
-
-        $news_exists_in_db = $this->repository.findBy(['news_provider' => 'abc']);
+        $news_exists_in_db = $this->repository->findBy(['news_provider' => 'abc']);
 
         if ($news_exists_in_db) {
             return $news_exists_in_db;
@@ -83,14 +68,18 @@ class NewsService{
         $result_news_data = array_map(function($news_item) {
             $one_news_page_content = $this->request_page($news_item['href']);
             $one_news_page_crawler = new Crawler($one_news_page_content);
-            $texts = $one_news_page_crawler->filter('p.fnmMv');
-            // $photos = $one_news_page_crawler->filter('img.sRQoy');
-            $arr = $texts->each(fn($node) => $node->text());
+            $texts = $one_news_page_crawler->filter('p.fnmMv'); 
+            $full_texts_arr = $texts->each(fn($node) => $node->text());
+            $photos_array_src = $one_news_page_crawler->filter('img.sRQoy')->each(fn($img) => $img->attr('src'));
+            $main_photo_src = '';
+            if (count($photos_array_src) > 0) {
+                $main_photo_src = $photos_array_src[0];
+            }
             return [
                 'title' => $news_item['title'],
                 'href' => $news_item['href'],
-                // 'img_href' => $photos->first()->image(), // $node->attr('href')
-                'full_text' => implode(' ', $arr),
+                'img_src' => $main_photo_src,
+                'full_text' => implode(' ', $full_texts_arr),
                 'rating' => rand(1, 10),
                 'news_provider' => 'abc',
             ];
@@ -114,5 +103,32 @@ class NewsService{
         } else {
             throw new BadRequestException(sprintf('Error while requesting page for URL:'.$url));
         }
+    }
+
+    public function update_news_rating($id) {
+        $one_news = $this->entityManager->getRepository(News::class)->find($id);
+
+        if (!$one_news) {
+            throw $this->createNotFoundException(
+                'No news found for id '.$id
+            );
+        }
+
+        $one_news->set_rating(10); // TODO: get rating value as param
+        $this->entityManager->persist($one_news);
+        $this->entityManager->flush();
+        return $one_news;
+    }
+
+    public function update_news($provider) {
+        $one_news = $this->entityManager->getRepository(News::class)->find($provider);
+
+        if (!$one_news) {
+            $one_news = $this->get_news($provider);
+        } else {
+            $entityManager->remove($provider);
+            $entityManager->flush();
+        }
+        return $one_news;
     }
 }

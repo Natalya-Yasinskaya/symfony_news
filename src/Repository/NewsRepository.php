@@ -39,27 +39,5 @@ class NewsRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return News[] Returns an array of News objects
-//     */
-   public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
-   {
-        $field = $criteria[0];
-        $value = $criteria[1];
-       return $this->createQueryBuilder('n')
-           ->andWhere('n.'.$field.' = '.$value)
-           ->getQuery()
-           ->getResult()
-       ;
-   }
 
-//    public function findOneBySomeField($value): ?News
-//    {
-//        return $this->createQueryBuilder('n')
-//            ->andWhere('n.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }

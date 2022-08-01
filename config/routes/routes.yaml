@@ -7,3 +7,11 @@ abc_news:
 rbk_news:
     path: /rbk
     controller: App\Controller\NewsController::get_rbk_news
+
+update_news_rating:
+    path: /update-news-rating/{id}
+    controller: App\Controller\NewsController::update_news_rating
+
+update_news:
+    path: /update-news/{provider}
+    controller: App\Controller\NewsController::update_news

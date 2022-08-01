@@ -19,7 +19,7 @@ final class Version20220730072235 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('CREATE TABLE news (id INT AUTO_INCREMENT NOT NULL, title TEXT NOT NULL, full_text TEXT NOT NULL, rating INT NOT NULL, href TEXT NOT NULL, img_href TEXT, news_provider TEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE news (id INT AUTO_INCREMENT NOT NULL, title TEXT NOT NULL, full_text TEXT NOT NULL, rating INT NOT NULL, href TEXT NOT NULL, img_src TEXT, news_provider TEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
     }
 
     public function down(Schema $schema): void
