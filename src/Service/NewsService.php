@@ -30,15 +30,21 @@ class NewsService{
         }
         $this->entityManager->flush();
     }
-    
-    public function get_news($provider)
+
+    public function get_news($provider, $page, $limit)
     {
-        $news_exists_in_db = $this->repository->findBy(['news_provider' => 'abc']);
+        $news_exists_in_db = $this->repository->findBy(['news_provider' => 'abc']); // 15
 
         if ($news_exists_in_db) {
-            return $news_exists_in_db;
+            $length = count($news_exists_in_db);
+            $offset = ($page - 1) * $limit;
+            $news_for_response = array_slice($news_exists_in_db, $offset, $limit);
+            return $news_for_response;
         } else {
             $news = $this->parse_news($provider);
+            $length = count($news);
+            $offset = ($page - 1) * $limit;
+            $news_for_response = array_slice($news, $offset, $limit);
             $this->save_news($news);
             return $news;
         }
@@ -55,7 +61,7 @@ class NewsService{
 
     private function parse_abc_news() {
         $url = 'https://abcnews.go.com/';
-                
+
         $response = $this->client->request('GET', $url);
         $statusCode = $response->getStatusCode();
 
@@ -68,7 +74,7 @@ class NewsService{
         $result_news_data = array_map(function($news_item) {
             $one_news_page_content = $this->request_page($news_item['href']);
             $one_news_page_crawler = new Crawler($one_news_page_content);
-            $texts = $one_news_page_crawler->filter('p.fnmMv'); 
+            $texts = $one_news_page_crawler->filter('p.fnmMv');
             $full_texts_arr = $texts->each(fn($node) => $node->text());
             $photos_array_src = $one_news_page_crawler->filter('img.sRQoy')->each(fn($img) => $img->attr('src'));
             $main_photo_src = '';
@@ -76,6 +82,7 @@ class NewsService{
                 $main_photo_src = $photos_array_src[0];
             }
             return [
+                'id'=> $news_item['id'],
                 'title' => $news_item['title'],
                 'href' => $news_item['href'],
                 'img_src' => $main_photo_src,
@@ -105,7 +112,7 @@ class NewsService{
         }
     }
 
-    public function update_news_rating($id) {
+    public function update_news_rating($id, $rating) {
         $one_news = $this->entityManager->getRepository(News::class)->find($id);
 
         if (!$one_news) {
@@ -114,21 +121,24 @@ class NewsService{
             );
         }
 
-        $one_news->set_rating(10); // TODO: get rating value as param
+        $one_news->set_rating($rating);
         $this->entityManager->persist($one_news);
         $this->entityManager->flush();
         return $one_news;
     }
 
-    public function update_news($provider) {
-        $one_news = $this->entityManager->getRepository(News::class)->find($provider);
+    public function delete_news($id) {
+        $one_news = $this->entityManager->getRepository(News::class)->find($id);
 
         if (!$one_news) {
-            $one_news = $this->get_news($provider);
-        } else {
-            $entityManager->remove($provider);
-            $entityManager->flush();
-        }
-        return $one_news;
-    }
+            throw $this->createNotFoundException(
+                'No news found for id '.$id
+            );
+        };
+
+        $this->entityManager->remove($one_news);
+        $this->entityManager->flush();
+
+        return "ok";
+     }
 }

@@ -35,6 +35,7 @@ class News implements JsonSerializable
 
     public function get_news() {
         return [
+            'id' => $this->id,
             'title' => $this->title,
             'href' => $this->href,
             'img_src' => $this->img_src,
@@ -46,6 +47,7 @@ class News implements JsonSerializable
 
     public function save($news_item)
     {
+        $this->id = $news_item['id'];
         $this->title = $news_item['title'];
         $this->href = $news_item['href'];
         $this->img_src = $news_item['img_src'];

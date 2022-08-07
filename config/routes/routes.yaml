@@ -8,10 +8,10 @@ rbk_news:
     path: /rbk
     controller: App\Controller\NewsController::get_rbk_news
 
-update_news_rating:
-    path: /update-news-rating/{id}
-    controller: App\Controller\NewsController::update_news_rating
-
 update_news:
-    path: /update-news/{provider}
+    path: /update-news
     controller: App\Controller\NewsController::update_news
+
+delete_news:
+    path: /delete-news
+    controller: App\Controller\NewsController::delete_news
